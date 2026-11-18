@@ -1,6 +1,6 @@
 # UEmo-D1
 
-## Overview
+## 🧭 Overview
 
 Official implementation of **UEmo-D1: An Efficient and Calibrated Decision Model for Unified Multimodal Emotion Recognition**. This repository provides a shared multimodal data pipeline, LoRA training, temperature calibration, and decision-mode evaluation. Inputs can contain text, images, audio, video, and preceding context; outputs are candidate-option predictions and their probabilities.
 
@@ -17,7 +17,7 @@ tests/                   Correctness checks
 
 The model release is a complete inference checkpoint. The data release contains 977,270 training records and 19,072 test records, with media organized by source and modality. Training uses diverse instructions. Test metadata is available in aligned fixed-instruction JSON and diverse-instruction JSONL variants that share the same media and samples. See the data repository for the metadata schema.
 
-## Train
+## 🛠️ Train
 
 ### 1. Install the environment
 
@@ -90,7 +90,7 @@ python -m uemo.calibrate \
 
 This selects a uniform 10% subset without replacement, approximately minimizes equal-setting ECE over 10 bins, and saves `temperature.json`, recalibrated `predictions.jsonl`, and `metrics.json`. The full-set metrics include the calibration subset. Use predictions from a separate calibration split if you need held-out evaluation. The published checkpoint already contains its fixed temperature, `1.0790077648040843`, and needs no refitting.
 
-## Eval
+## 📊 Eval
 
 ### 1. Prepare the test data and released model
 
