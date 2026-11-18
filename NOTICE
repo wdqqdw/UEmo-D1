@@ -1,0 +1,6 @@
+Built with Qwen.
+
+The Qwen2.5-Omni-3B base model and UEmo-D1 model weights are subject to the Qwen Research License. See the model release for its LICENSE and attribution:
+https://huggingface.co/wudq/UEmo-D1/blob/main/LICENSE
+
+This repository contains the UEmo-D1 input-prefix attention integration, decoder-only LoRA training, preprocessing, evaluation, and calibration code. Model weights and datasets are distributed separately through the linked Hugging Face repositories.

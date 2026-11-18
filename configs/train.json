@@ -1,0 +1,11 @@
+{
+  "seed": 20261004,
+  "epochs": 1,
+  "global_batch_size": 64,
+  "micro_batch_size": 8,
+  "padded_token_budget": 12000,
+  "learning_rate": 0.0001,
+  "weight_decay": 0.01,
+  "warmup_steps": 500,
+  "save_steps": 1000
+}
