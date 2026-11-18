@@ -38,9 +38,12 @@ def validate_record(row):
 def load_records(path, *, check_media=False, media_root=None):
     path = Path(path)
     with path.open(encoding='utf-8') as handle:
-        rows = json.load(handle)
+        if path.suffix.lower() == '.jsonl':
+            rows = [json.loads(line) for line in handle if line.strip()]
+        else:
+            rows = json.load(handle)
     if not isinstance(rows, list) or not rows:
-        raise ValueError('Metadata must be a nonempty JSON list')
+        raise ValueError('Metadata must be a nonempty JSON list or JSONL file')
     seen = set()
     root = Path(media_root) if media_root else path.parent
     for row in rows:

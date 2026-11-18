@@ -10,7 +10,7 @@ from pathlib import Path, PurePosixPath
 from .data import load_records
 from .io import sha256, write_json
 
-DATA_REVISION = '94e295df5670437deba9547b723b44400a652713'
+DATA_REVISION = '2d0c348eee48d44e14c0c0872b1740f5e8e7b619'
 
 
 def extract_archive(archive):

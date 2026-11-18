@@ -15,7 +15,7 @@ uemo/                    Data, attention, training, evaluation, and calibration 
 tests/                   Correctness checks
 ```
 
-The model release is a complete inference checkpoint. The data release contains 977,270 training records and 19,072 test records, with media organized by source and modality. See the data repository for the JSON schema.
+The model release is a complete inference checkpoint. The data release contains 977,270 training records and 19,072 test records, with media organized by source and modality. Training uses diverse instructions. Test metadata is available in aligned fixed-instruction JSON and diverse-instruction JSONL variants that share the same media and samples. See the data repository for the metadata schema.
 
 ## Train
 
@@ -111,7 +111,23 @@ OUTPUT_DIR=outputs/eval \
 bash scripts/eval.sh
 ```
 
-The runner reads the JSON directly, preserves each sample's option order and context, retains full audio, and samples video at 2 FPS. DFEW's ordered image frames remain images. It scores the valid option letters and applies the model's temperature exactly once. There is no API call or fixed 16-frame cap.
+The runner reads JSON or JSONL directly, preserves each sample's option order and context, retains full audio, and samples video at 2 FPS. DFEW's ordered image frames remain images. It scores the valid option letters and applies the model's temperature exactly once. There is no API call or fixed 16-frame cap.
+
+The default uses `test/test_metadata.json` (fixed instructions). To evaluate the same samples with diverse instructions, select the aligned JSONL and a separate output directory:
+
+```bash
+METADATA=data/UEmo-Data-v1/test/test_metadata_diverse.jsonl \
+OUTPUT_DIR=outputs/eval-diverse \
+bash scripts/eval.sh
+```
+
+Both variants preserve identical sample IDs, media, context, option order, and answers; only the instruction differs. If you already downloaded the earlier test release, fetch just the new metadata without downloading media again:
+
+```bash
+hf download wudq/UEmo-Data-v1 test/test_metadata_diverse.jsonl \
+  --repo-type dataset --revision 2d0c348eee48d44e14c0c0872b1740f5e8e7b619 \
+  --local-dir data/UEmo-Data-v1
+```
 
 For a quick check, use `OUTPUT_DIR=outputs/eval-smoke bash scripts/eval.sh --max-samples 8`. To continue an interrupted evaluation with identical inputs and model weights:
 
