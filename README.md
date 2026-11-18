@@ -101,27 +101,41 @@ bash scripts/prepare_data.sh test
 python -m uemo.download_model --repo wudq/UEmo-D1 --output models/UEmo-D1
 ```
 
-### 2. Run inference
+### 2. Fixed-instruction evaluation
+
+Fixed evaluation uses `test/test_metadata.json`: one fixed instruction per setting.
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
 MODEL_DIR=models/UEmo-D1 \
 DATA_ROOT=data/UEmo-Data-v1 \
-OUTPUT_DIR=outputs/eval \
-bash scripts/eval.sh
+bash scripts/eval.sh fixed
 ```
 
-The runner reads JSON or JSONL directly, preserves each sample's option order and context, retains full audio, and samples video at 2 FPS. DFEW's ordered image frames remain images. It scores the valid option letters and applies the model's temperature exactly once. There is no API call or fixed 16-frame cap.
-
-The default uses `test/test_metadata.json` (fixed instructions). To evaluate the same samples with diverse instructions, select the aligned JSONL and a separate output directory:
+Results are saved to `outputs/eval-fixed/` by default. Resume this variant with:
 
 ```bash
-METADATA=data/UEmo-Data-v1/test/test_metadata_diverse.jsonl \
-OUTPUT_DIR=outputs/eval-diverse \
-bash scripts/eval.sh
+bash scripts/eval.sh fixed --resume
 ```
 
-Both variants preserve identical sample IDs, media, context, option order, and answers; only the instruction differs. If you already downloaded the earlier test release, fetch just the new metadata without downloading media again:
+### 3. Diverse-instruction evaluation
+
+Diverse evaluation uses `test/test_metadata_diverse.jsonl`: sample-specific instructions from the frozen diverse-instruction evaluation set. It contains the same 19,072 samples and 41 settings as fixed evaluation. Sample IDs, media, context, option order, and answers are identical; only the instruction differs.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 \
+MODEL_DIR=models/UEmo-D1 \
+DATA_ROOT=data/UEmo-Data-v1 \
+bash scripts/eval.sh diverse
+```
+
+Results are saved separately to `outputs/eval-diverse/` by default. Resume this variant with:
+
+```bash
+bash scripts/eval.sh diverse --resume
+```
+
+The data preparation step downloads both metadata variants. If you already downloaded the earlier test release, fetch just the diverse metadata without downloading media again:
 
 ```bash
 hf download wudq/UEmo-Data-v1 test/test_metadata_diverse.jsonl \
@@ -129,31 +143,46 @@ hf download wudq/UEmo-Data-v1 test/test_metadata_diverse.jsonl \
   --local-dir data/UEmo-Data-v1
 ```
 
-For a quick check, use `OUTPUT_DIR=outputs/eval-smoke bash scripts/eval.sh --max-samples 8`. To continue an interrupted evaluation with identical inputs and model weights:
+### 4. Shared evaluation options
+
+Both variants use the same inference and scoring code. The runner reads JSON or JSONL, preserves each sample's option order and context, retains full audio, and samples video at 2 FPS. DFEW's ordered image frames remain images. It scores the valid option letters and applies the model's temperature exactly once. There is no API call or fixed 16-frame cap.
+
+Omitting the variant selects `fixed`. `OUTPUT_DIR` overrides the output directory, and `METADATA` overrides the metadata path for custom data. Use separate output directories when changing variants, inputs, model weights, or temperature. For older runs saved in `outputs/eval/`, explicitly set `OUTPUT_DIR=outputs/eval` when resuming.
+
+For a quick installation check:
 
 ```bash
-bash scripts/eval.sh --resume
+OUTPUT_DIR=outputs/eval-fixed-smoke bash scripts/eval.sh fixed --max-samples 8
+OUTPUT_DIR=outputs/eval-diverse-smoke bash scripts/eval.sh diverse --max-samples 8
 ```
 
-To evaluate a newly trained adapter, set `MODEL_DIR` to the original base and pass the adapter directory printed in `latest_checkpoint.json`:
+To evaluate a newly trained adapter, set `MODEL_DIR` to the original base and pass the adapter directory printed in `latest_checkpoint.json`. Choose `fixed` or `diverse` explicitly:
 
 ```bash
 MODEL_DIR=models/Qwen2.5-Omni-3B \
 OUTPUT_DIR=outputs/eval-trained \
-bash scripts/eval.sh --adapter outputs/train/checkpoint-step-0015270/adapter
+bash scripts/eval.sh fixed --adapter outputs/train/checkpoint-step-0015270/adapter
 ```
 
-For subsequent inference with a temperature fitted for that adapter, add `--temperature-file outputs/calibration/temperature.json`. Use a new output directory when changing the model or temperature.
+For subsequent inference with a temperature fitted for that adapter, add `--temperature-file outputs/calibration/temperature.json`.
 
-### 3. Read the saved results
+### 5. Read the saved results
 
 ```text
-outputs/eval/
-  predictions.jsonl   One result per sample, written incrementally
-  metrics.json        Overall, equal-setting, per-source, and per-subtask metrics
-  run.json            Input/model fingerprints and evaluation configuration
-  completed.json      Completion counts and output hashes
+outputs/
+  eval-fixed/
+    predictions.jsonl
+    metrics.json
+    run.json
+    completed.json
+  eval-diverse/
+    predictions.jsonl
+    metrics.json
+    run.json
+    completed.json
 ```
+
+Each directory contains incremental predictions (`predictions.jsonl`), aggregated metrics (`metrics.json`), input/model fingerprints and configuration (`run.json`), and completion counts and hashes (`completed.json`).
 
 Each prediction includes `id`, `source`, `source_id`, `subtask` when present, `modality`, `choices`, `gt_answer`, `prediction_letter`, `prediction`, `correct`, `option_logits`, `probabilities`, `temperature`, and `seconds`. Logits and probabilities align with `choices`. An error is saved to `errors.jsonl` and stops the run instead of silently dropping a sample.
 
