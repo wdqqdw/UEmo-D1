@@ -4,7 +4,7 @@
 
 Official implementation of **UEmo-D1: An Efficient and Calibrated Decision Model for Unified Multimodal Emotion Recognition**. This repository provides a shared multimodal data pipeline, LoRA training, temperature calibration, and decision-mode evaluation. Inputs can contain text, images, audio, video, and preceding context; outputs are candidate-option predictions and their probabilities.
 
-**[Model](https://huggingface.co/wudq/UEmo-D1)** · **[Data](https://huggingface.co/datasets/wudq/UEmo-Data-v1)**
+**[arXiv](https://arxiv.org/abs/2611.24481)** · **[Model](https://huggingface.co/wudq/UEmo-D1)** · **[Data](https://huggingface.co/datasets/wudq/UEmo-Data-v1)**
 
 ```text
 configs/train.json        Training configuration
